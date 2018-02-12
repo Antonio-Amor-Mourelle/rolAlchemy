@@ -114,23 +114,59 @@ def addRecipe():
         print('Ha habido un problema con la nueva receta')
 
 ################ BAG ############################
+#----------Materials----------#
+def listBagMaterials():
+    bms = session.query(BagMaterials).all()
+
+    print('\nMis Materiales:')
+    for bm in bms:
+        mat=getMaterial(str(bm.id))
+        print('\t'+str(bm.id)+'· '+mat.name+ ' x ' + str(bm.num))
+    print('')
+
 def addMaterialToBag():
     listMaterials()
     mat=input('¿Que material queres añadir a la mochila? ')
     num=input('¿cuantos quieres añadir a la mochila? ')
     mat=getMaterial(mat)
 
-    print('añadiendo '+ mat.name + ' con id: '+ str(mat.id))
     bm = BagMaterials(mat.id, num)
     session.add(bm)
     try:
         session.commit()
-        print('añadido')
     except:
         print('ha ocurrido algun error')
 
+#----------Potions----------#
+
+def listBagPotions():
+    bps = session.query(BagRecipes).all()
+
+    print('\nMis Pociones:')
+    for bp in bps:
+        pot=getRecipe(str(bp.id))
+        print('\t'+str(bp.id)+'· '+pot.name+ ' x ' + str(bp.num))
+    print('')
+
 def addPotionsToBag():
-    pass
+    #
+    #FALTA QUITAR LOS ELEMENTOS DE LA POCION
+    #
+    al=input("¿Quien eres?")
+    print(getAlchemistRecipes(al))
+    pot=input('¿Que pocion queres añadir a la mochila? ')
+    num=input('¿Cuantos quieres añadir a la mochila? ')
+    pot=getRecipe(pot)
+
+    bp = BagRecipes(pot.id, num)
+    session.add(bp)
+    try:
+        session.commit()
+    except:
+        print('ha ocurrido algun error')
+
+
+
 
 ################ ALCHEMIST ############################
 def getAlchemist(pointer):
@@ -138,6 +174,9 @@ def getAlchemist(pointer):
         return session.query(Alchemist).filter(Alchemist.id==int(pointer)).first()
     else:
         return session.query(Alchemist).filter(Alchemist.name==pointer).first()
+
+def getAlchemistRecipes(pointer):
+    return getAlchemist(pointer).recipes
 
 
 def listAlchemists():
@@ -163,8 +202,9 @@ while True:
                         \n\t7·  Listar Alquimistas \
                         \n\t------PLAYER------\
                         \n\t8·  Añadir materiales a la mochila \
-                        \n\t9·  Añadir recetas a mi libro de recetas\
-                        \n\t10· Ver la mochila\
+                        \n\t9·  Añadir pociones a la mochila\
+                        \n\t10· Añadir recetas a mi libro de recetas\
+                        \n\t11· Ver la mochila\
                         \n-->')
 
 
@@ -201,10 +241,12 @@ while True:
         addMaterialToBag()
 
     if res=='9':
-        res=input('¿Quien eres? ')
-        res=getAlchemist(res)
-        print(res.recipes)
-
+        addPotionsToBag()
 
     if res=='10':
-        print('POR IMPLEMENTAR')
+        res=input('¿Quien eres? ')
+        print(getAlchemistRecipes(res))
+
+    if res=='11':
+        listBagMaterials()
+        listBagPotions()
