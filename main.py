@@ -3,7 +3,7 @@
 # 1 - imports
 from base import Session, engine, Base
 from material import Material
-from recipe import Recipe
+from recipe import Recipe, Re_MatAssociation
 from bagMaterials import BagMaterials
 from bagPotions import BagPotions
 from alchemist import Alchemist
@@ -64,10 +64,20 @@ def getRecipe(pointer):
         return session.query(Recipe).filter(Recipe.name==pointer).first()
 
 
+def getRecipeMaterials(pointer):
+    '''Consigue los materiales presentes
+       en una receta (sin su numero de unidades)
+    '''
+    re=getRecipe(pointer)
+    mats=[]
+    for r_mAsoc in re.materials:
+        mats.append(r_mAsoc.material)
+    return mats
+
 def RecipeDesc(pointer):
     re=getRecipe(pointer)
     print(re.name + ':')
-    print(re.materials)
+    print(re.materials)# En realidad es una lista de asociaciones r-mAsoc
     print(re.desc)
 
 
@@ -91,15 +101,20 @@ def addRecipe():
         return
     #conseguimos los materiales que conforman la receta
     listMaterials()
-    res=input('Selecciona separando por "," los materiales de la receta: ')
+    res=input('Selecciona separando por "," los materiales de la receta\n \
+    Ejemplo: azufre x 2, acido x 1, 2(<--tbn indexa por id) x 3\n  ')
     #lista de "punteros(nombres o ids) a los materiales"
     lMatPointers= res.split(',')
     #conseguimos los materiales
-    lmats=[]
+    lR_MAsocs=[]
     for pointer in lMatPointers:
-            lmats.append(getMaterial(pointer))
+            pointer,num=pointer.split(' x ')
+            print(pointer,num)
+            mat=getMaterial(pointer)
+            lR_MAsocs.append(Re_MatAssociation(mat,num))
 
-    r=Recipe(name, desc, lmats)
+
+    r=Recipe(name, desc, lR_MAsocs)
 
 
     #añadimos la receta a la base de datos(no hasta el commit)
@@ -157,7 +172,7 @@ def addPotionsToBag():
     num=input('¿Cuantos quieres añadir a la mochila? ')
 
     pot=getRecipe(pot)
-    bp = BagPotions(pot.id, num)
+    bp=BagPotions(pot.id, num)
     session.add(bp)
     try:
         session.commit()

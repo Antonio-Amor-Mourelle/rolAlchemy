@@ -3,7 +3,7 @@
 # 1 - imports
 from base import Session, engine, Base
 from material import Material
-from recipe import Recipe
+from recipe import Recipe, Re_MatAssociation
 from alchemist import Alchemist
 from bagMaterials import BagMaterials
 from bagPotions import BagPotions
@@ -29,14 +29,20 @@ session.commit()
 print('material commit ok')
 
 #5 - creates recipes
-r1 = Recipe("receta 1", "Esta es la receta 1",[azufre])
-r2 = Recipe("receta 2", "Esta es la receta 2",[sal])
-r3 = Recipe("receta 3", "Esta es la receta 3",[sal,sal, acido])
+r_m1=Re_MatAssociation(azufre)
+r_m2=Re_MatAssociation(sal,1)
+r_m2=Re_MatAssociation(acido,3)
+
+
+r1 = Recipe("receta 1", "Esta es la receta 1",[r_m1,r_m2])
+r2 = Recipe("receta 2", "Esta es la receta 2",[r_m1,r_m3])
+r3 = Recipe("receta 2", "Esta es la receta 2",[r_m1,r_m2,r_m3])
+
 
 
 session.add(r1)
-session.add(r2)
-session.add(r3)
+#session.add(r2)
+#session.add(r3)
 
 session.commit()
 print('recipes commit ok')
