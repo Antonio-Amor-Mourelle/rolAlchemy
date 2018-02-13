@@ -7,8 +7,8 @@ from base import Base
 
 
 alchemist_recipes_association = Table('alchemists_recipes', Base.metadata,
-    Column('alchemist_id', Integer, ForeignKey('alchemists.id')),
-    Column('recipes_id', Integer, ForeignKey('recipes.id'))
+    Column('alchemist_id', Integer, ForeignKey('alchemists.id'), primary_key=True),
+    Column('recipes_id', Integer, ForeignKey('recipes.id'), primary_key=True)    
 )
 
 class Alchemist(Base):
