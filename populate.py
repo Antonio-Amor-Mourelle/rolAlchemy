@@ -31,12 +31,12 @@ print('material commit ok')
 #5 - creates recipes
 r_m1=Re_MatAssociation(azufre)
 r_m2=Re_MatAssociation(sal,1)
-r_m2=Re_MatAssociation(acido,3)
+r_m3=Re_MatAssociation(acido,3)
 
 
 r1 = Recipe("receta 1", "Esta es la receta 1",[r_m1,r_m2])
 r2 = Recipe("receta 2", "Esta es la receta 2",[r_m1,r_m3])
-r3 = Recipe("receta 2", "Esta es la receta 2",[r_m1,r_m2,r_m3])
+r3 = Recipe("receta 3", "Esta es la receta 3",[r_m1,r_m2,r_m3])
 
 
 
