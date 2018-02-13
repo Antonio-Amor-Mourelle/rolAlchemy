@@ -5,11 +5,13 @@ from base import Base
 
 
 class BagMaterials(Base):
-    __tablename__ = 'BagMaterials'
+    __tablename__ = 'bagMaterials'
 
-    id = Column(Integer,ForeignKey('materials.id'), primary_key=True)
+    alId = Column(Integer,ForeignKey('alchemists.id'), primary_key=True)
+    matId = Column(Integer,ForeignKey('materials.id'), primary_key=True)
     num = Column(Integer)
 
-    def __init__(self, id, num):
-        self.id = id
+    def __init__(self, alId,matId, num):
+        self.alId = alId
+        self.matId = matId
         self.num = num
