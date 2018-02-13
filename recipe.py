@@ -18,8 +18,9 @@ class Recipe(Base):
     desc = Column(String(200))
     materials = relationship("Material", secondary=recipes_materials_association)
 
-    def __init__(self, name, desc):
+    def __init__(self, name, desc,l=[]):
         self.name = name
         self.desc = desc
+        self.materials=l
     def __repr__(self):
         return self.name
