@@ -122,13 +122,19 @@ def addRecipe():
 
     try:
         session.commit()
-    #es en el commit donde puede sar errores de integridad
+    #es en el commit donde puede dar errores de integridad
     except IntegrityError:
         session.rollback()
         print('Ha habido un problema con la nueva receta')
 
 ################ BAG ############################
 #----------Materials----------#
+def getBagMaterial(al,mat):
+    al=getAlchemist(al)
+    mat=getMaterial(mat)
+    return session.query(BagMaterials).filter(BagMaterials.alId==al.id,BagMaterials.matId==mat.id).first()
+
+
 def listBagMaterials(al):
     al=getAlchemist(al)
     bms = session.query(BagMaterials).filter(BagMaterials.alId==al.id)
@@ -145,18 +151,22 @@ def addMaterialToBag():
     num=input('¿cuantos quieres añadir a la mochila? ')
 
     mat=getMaterial(mat)
-    bm = BagMaterials(al,mat.id, num)
-    session.add(bm)
+    alchemist=getAlchemist(al)
     try:
+        bm=session.query(BagMaterials).filter(BagMaterials.alId==alchemist.id,BagMaterials.matId==mat.id).first()
+        bm.num+=int(num)
         session.commit()
+        #print('material actualizado')
     except:
-        print('ha ocurrido algun error')
+        bm=BagMaterials(alchemist.id,mat.id, num)
+        session.add(bm)
+        session.commit()
+        #print('materials añadido')
 
 #----------Potions----------#
 def listBagPotions(al):
     al=getAlchemist(al)
     bps = session.query(BagPotions).filter(BagPotions.alId==al.id)
-
     print('\nMis Pociones:')
     for bp in bps:
         pot=getRecipe(str(bp.potId))
@@ -172,12 +182,17 @@ def addPotionsToBag():
     num=input('¿Cuantos quieres añadir a la mochila? ')
 
     pot=getRecipe(pot)
-    bp=BagPotions(pot.id, num)
-    session.add(bp)
+    alchemist=getAlchemist(al)
     try:
+        bp=session.query(BagPotions).filter(BagPotions.alId==alchemist.id,BagPotions.potId==pot.id).first()
+        bp.num+=int(num)
         session.commit()
+        #print('pocion actualizada')
     except:
-        print('ha ocurrido algun error')
+        bp=BagPotions(alchemist.id,pot.id, num)
+        session.add(bp)
+        session.commit()
+        #print('pocion añadida')
 
 
 
@@ -196,7 +211,6 @@ def getAlchemistRecipes(pointer):
 def listAlchemists():
     alchemists = session.query(Alchemist).all()
 
-    # 4 - print movies' details
     print('\nAlchemist activos:')
     for al in alchemists:
         print('\t'+str(al.id)+'· '+al.name)
@@ -261,7 +275,7 @@ while True:
         addPotionsToBag()
 
     if res=='10':
-        print(getAlchemistRecipes(res))
+        print(getAlchemistRecipes(al))
 
     if res=='11':
         listBagMaterials(al)
