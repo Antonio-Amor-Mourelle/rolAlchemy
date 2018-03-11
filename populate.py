@@ -6,7 +6,7 @@ from material import Material
 from recipe import Recipe, Re_MatAssociation
 from alchemist import Alchemist
 from bagMaterials import BagMaterials
-from bagPotions import BagPotions
+#from bagPotions import BagPotions
 
 from sqlalchemy.exc import IntegrityError
 
@@ -38,11 +38,19 @@ r1 = Recipe("receta 1", "Esta es la receta 1",[r_m1,r_m2])
 r2 = Recipe("receta 2", "Esta es la receta 2",[r_m1,r_m3])
 r3 = Recipe("receta 3", "Esta es la receta 3",[r_m1,r_m2,r_m3])
 
-
-
 session.add(r1)
-#session.add(r2)
-#session.add(r3)
+session.add(r2)
+session.add(r3)
+
+#las recetas llevan un material asociado con el mismo nombre y descripcion
+
+r1_m= Material("receta 1", "Esta es la receta 1")
+r2_m= Material("receta 2", "Esta es la receta 2")
+r3_m= Material("receta 3", "Esta es la receta 3")
+
+session.add(r1_m)
+session.add(r2_m)
+session.add(r3_m)
 
 session.commit()
 print('recipes commit ok')
@@ -50,7 +58,7 @@ print('recipes commit ok')
 
 # ** - add alchemists
 al1= Alchemist('ton',list(set([r1,r3])))
-al2= Alchemist('javi',list(set([r2,r3])))
+al2= Alchemist('esther',list(set([r2,r3])))
 
 session.add(al1)
 session.add(al2)
@@ -65,11 +73,11 @@ session.add(bm1)
 session.add(bm2)
 
 
-bp1=BagPotions(1,2,2)
-bp2=BagPotions(2,1,5)
+#bp1=BagPotions(1,2,2)
+#bp2=BagPotions(2,1,5)
 
-session.add(bp2)
-session.add(bp2)
+#session.add(bp2)
+#session.add(bp2)
 
 session.commit()
 

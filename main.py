@@ -5,7 +5,7 @@ from base import Session, engine, Base
 from material import Material
 from recipe import Recipe, Re_MatAssociation
 from bagMaterials import BagMaterials
-from bagPotions import BagPotions
+#from bagPotions import BagPotions
 from alchemist import Alchemist
 
 from sqlalchemy.exc import IntegrityError
@@ -19,6 +19,8 @@ session = Session()
 
 ################ MATERIALS #######################
 def getMaterial(pointer):
+    if isinstance(pointer, Material):
+        return pointer
     if pointer.isdigit():
         return session.query(Material).filter(Material.id==int(pointer)).first()
     else:
@@ -58,6 +60,8 @@ def addMaterial():
 
 ################ RECIPES #########################
 def getRecipe(pointer):
+    if isinstance(pointer, Material):
+        return pointe
     if pointer.isdigit():
         return session.query(Recipe).filter(Recipe.id==int(pointer)).first()
     else:
@@ -65,13 +69,11 @@ def getRecipe(pointer):
 
 
 def getRecipeMaterials(pointer):
-    '''Consigue los materiales presentes
-       en una receta (sin su numero de unidades)
-    '''
+    '''Consigue los materiales presentes en una receta y su numero'''
     re=getRecipe(pointer)
-    mats=[]
+    mats={}
     for r_mAsoc in re.materials:
-        mats.append(r_mAsoc.material)
+        mats[r_mAsoc.material]=r_mAsoc.num_material
     return mats
 
 def RecipeDesc(pointer):
@@ -115,11 +117,12 @@ def addRecipe():
 
 
     r=Recipe(name, desc, lR_MAsocs)
+    m=Material(name,desc)
 
 
     #añadimos la receta a la base de datos(no hasta el commit)
+    session.add(m)
     session.add(r)
-
     try:
         session.commit()
     #es en el commit donde puede dar errores de integridad
@@ -134,8 +137,18 @@ def getBagMaterial(al,mat):
     mat=getMaterial(mat)
     return session.query(BagMaterials).filter(BagMaterials.alId==al.id,BagMaterials.matId==mat.id).first()
 
+def getBagMaterials(al):
+    '''devuelve un diccionario con los materiales y su cantidad'''
+    al=getAlchemist(al)
+    bms=session.query(BagMaterials).filter(BagMaterials.alId==al.id).all()
+    mats={}
+    for bm in bms:
+        mats[getMaterial(str(bm.matId))]=bm.num
+    return mats
+
 
 def listBagMaterials(al):
+    '''imprime por pantalla los materiales en la mochila y su numero'''
     al=getAlchemist(al)
     bms = session.query(BagMaterials).filter(BagMaterials.alId==al.id)
 
@@ -145,25 +158,66 @@ def listBagMaterials(al):
         print('\t'+str(bm.matId)+'· '+mat.name+ ' x ' + str(bm.num))
     print('')
 
-def addMaterialToBag():
-    listMaterials()
-    mat=input('¿Que material queres añadir a la mochila? ')
-    num=input('¿cuantos quieres añadir a la mochila? ')
 
+def addMaterialToBag(al, mat, num):
+
+    al=getAlchemist(al)
     mat=getMaterial(mat)
-    alchemist=getAlchemist(al)
+    num=int(num)
     try:
-        bm=session.query(BagMaterials).filter(BagMaterials.alId==alchemist.id,BagMaterials.matId==mat.id).first()
+        bm=session.query(BagMaterials).filter(BagMaterials.alId==al.id,BagMaterials.matId==mat.id).first()
         bm.num+=int(num)
         session.commit()
         #print('material actualizado')
     except:
-        bm=BagMaterials(alchemist.id,mat.id, num)
+        bm=BagMaterials(al.id,mat.id, num)
         session.add(bm)
         session.commit()
         #print('materials añadido')
 
+
+def addMaterialToBagInterface(al):
+    listMaterials()
+    mat=input('¿Que material queres añadir a la mochila? ')
+    num=input('¿cuantos quieres añadir a la mochila? ')
+    addMaterialToBag(al,mat,num)
+
+
+
 #----------Potions----------#
+def checkDoPotion(al, pointer):
+    '''comprueba si es posible realizar una pocion'''
+    alMats=getBagMaterials(al)
+    potMats=getRecipeMaterials(pointer)
+    keys=potMats.keys()
+
+    try:
+        for key in keys:
+            alNum=alMats[key]
+            potNum=potMats[key]
+            if alNum<potNum:
+                return False
+    except:
+        return False
+    return True
+
+
+def doPotion(al, pointer):
+    '''comprueba q se pueda hacer la pocion,
+       elimina los materiales correspondientes
+       y devuelve la pocion'''
+    if not checkDoPotion(al, pointer):
+        return
+
+    potMats=getRecipeMaterials(pointer)
+    keys=potMats.keys()
+
+    for key in keys:
+        addMaterialToBag(al,key,potMats[key]*-1)
+
+    addMaterialToBag(al,pointer,1)
+
+'''
 def listBagPotions(al):
     al=getAlchemist(al)
     bps = session.query(BagPotions).filter(BagPotions.alId==al.id)
@@ -172,33 +226,36 @@ def listBagPotions(al):
         pot=getRecipe(str(bp.potId))
         print('\t'+str(bp.potId)+'· '+pot.name+ ' x ' + str(bp.num))
     print('')
+'''
 
-def addPotionsToBag():
+
+def addPotionsToBag(al, pointer,num):
+    al=getAlchemist(al)
+    num=int(num)
+
+    for i in range(num):
+        doPotion(al, pointer)
+
+
+
+def addPotionsToBagInterface(al):
     #
     #TODO FALTA QUITAR LOS ELEMENTOS DE LA POCION
     #
+
     print(getAlchemistRecipes(al))
-    pot=input('¿Que pocion queres añadir a la mochila? ')
+    al=getAlchemist(al)
+    pointer=input('¿Que pocion queres añadir a la mochila? ')
     num=input('¿Cuantos quieres añadir a la mochila? ')
 
-    pot=getRecipe(pot)
-    alchemist=getAlchemist(al)
-    try:
-        bp=session.query(BagPotions).filter(BagPotions.alId==alchemist.id,BagPotions.potId==pot.id).first()
-        bp.num+=int(num)
-        session.commit()
-        #print('pocion actualizada')
-    except:
-        bp=BagPotions(alchemist.id,pot.id, num)
-        session.add(bp)
-        session.commit()
-        #print('pocion añadida')
-
+    addPotionsToBag(al,pointer,num)
 
 
 
 ################ ALCHEMIST ############################
 def getAlchemist(pointer):
+    if isinstance(pointer, Alchemist):
+        return pointer
     if pointer.isdigit():
         return session.query(Alchemist).filter(Alchemist.id==int(pointer)).first()
     else:
@@ -219,6 +276,7 @@ def listAlchemists():
 ################ MAIN ############################
 
 al=input("¿Quien eres?")
+al=getAlchemist(al)
 print('\n')
 while True:
     res=input('----------¿Que quieres hacer?---------- \
@@ -269,14 +327,21 @@ while True:
         listAlchemists()
 
     if res=='8':
-        addMaterialToBag()
+        addMaterialToBagInterface(al)
 
     if res=='9':
-        addPotionsToBag()
+        addPotionsToBagInterface(al)
 
     if res=='10':
         print(getAlchemistRecipes(al))
 
     if res=='11':
         listBagMaterials(al)
-        listBagPotions(al)
+        #listBagPotions(al)
+
+
+
+    if res=='12':
+        RecipeDesc('receta 2')
+        re=getRecipe('receta 2')
+        print(getRecipeMaterials('receta 2'))
