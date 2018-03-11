@@ -338,10 +338,3 @@ while True:
     if res=='11':
         listBagMaterials(al)
         #listBagPotions(al)
-
-
-
-    if res=='12':
-        RecipeDesc('receta 2')
-        re=getRecipe('receta 2')
-        print(getRecipeMaterials('receta 2'))
