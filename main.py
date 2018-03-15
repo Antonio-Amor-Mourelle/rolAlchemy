@@ -2,11 +2,13 @@
 
 # 1 - imports
 from base import Session, engine, Base
-from material import Material
-from recipe import Recipe, Re_MatAssociation
-from bagMaterials import BagMaterials
+#from material import Material
+#from recipe import Recipe, Re_MatAssociation
+#from bagMaterials import BagMaterials
 #from bagPotions import BagPotions
-from alchemist import Alchemist
+#from alchemist import Alchemist
+
+from models import Material, Recipe, Re_MatAssociation, BagMaterials, Alchemist
 
 from sqlalchemy.exc import IntegrityError
 
@@ -15,6 +17,16 @@ Base.metadata.create_all(engine)
 
 # 3 - create a new session
 session = Session()
+
+
+def flush_input():
+    try:
+        import msvcrt
+        while msvcrt.kbhit():
+            msvcrt.getch()
+    except ImportError:
+        import sys, termios
+        termios.tcflush(sys.stdin, termios.TCIOFLUSH)
 
 
 ################ MATERIALS #######################
@@ -61,7 +73,7 @@ def addMaterial():
 ################ RECIPES #########################
 def getRecipe(pointer):
     if isinstance(pointer, Material):
-        return pointe
+        return pointer
     if pointer.isdigit():
         return session.query(Recipe).filter(Recipe.id==int(pointer)).first()
     else:
@@ -239,9 +251,6 @@ def addPotionsToBag(al, pointer,num):
 
 
 def addPotionsToBagInterface(al):
-    #
-    #TODO FALTA QUITAR LOS ELEMENTOS DE LA POCION
-    #
 
     print(getAlchemistRecipes(al))
     al=getAlchemist(al)
@@ -301,40 +310,49 @@ while True:
         session.close()
         break
 
-    if res=='1':
+    elif res=='1':
         addMaterial()
 
-    if res=='2':
+    elif res=='2':
         listMaterials()
 
-    if res=='3':
+    elif res=='3':
         listMaterials()
         res=input('¿Que material queres ver en detalle? ')
-        MaterialDesc(res)
+        try:
+            MaterialDesc(res)
+        except:
+            print("Error buscando material")
 
-    if res=='4':
+    elif res=='4':
         addRecipe()
 
-    if res=='5':
+    elif res=='5':
         listRecipes()
 
-    if res=='6':
+    elif res=='6':
         listRecipes()
         res=input('¿Que receta queres ver en detalle? ')
-        RecipeDesc(res)
+        try:
+            RecipeDesc(res)
+        except:
+            print("Error buscando receta")
 
-    if res=='7':
+    elif res=='7':
         listAlchemists()
 
-    if res=='8':
+    elif res=='8':
         addMaterialToBagInterface(al)
 
-    if res=='9':
+    elif res=='9':
         addPotionsToBagInterface(al)
 
-    if res=='10':
+    elif res=='10':
         print(getAlchemistRecipes(al))
 
-    if res=='11':
+    elif res=='11':
         listBagMaterials(al)
         #listBagPotions(al)
+
+#hola
+    flush_input()   #para vaciar le buffer de input 
