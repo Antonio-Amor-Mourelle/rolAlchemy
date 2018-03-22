@@ -72,7 +72,7 @@ def addMaterial():
 
 ################ RECIPES #########################
 def getRecipe(pointer):
-    if isinstance(pointer, Material):
+    if isinstance(pointer, Recipe):
         return pointer
     if pointer.isdigit():
         return session.query(Recipe).filter(Recipe.id==int(pointer)).first()
@@ -152,7 +152,7 @@ def getBagMaterial(al,mat):
 def getBagMaterials(al):
     '''devuelve un diccionario con los materiales y su cantidad'''
     al=getAlchemist(al)
-    bms=session.query(BagMaterials).filter(BagMaterials.alId==al.id).all()
+    bms = session.query(BagMaterials).filter( BagMaterials.alId == al.id ).all()
     mats={}
     for bm in bms:
         mats[getMaterial(str(bm.matId))]=bm.num
