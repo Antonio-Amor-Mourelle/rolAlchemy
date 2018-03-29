@@ -6,8 +6,8 @@ from flask import Flask, request, json
 
 # 1 - imports
 from base import Session, engine, Base
-from models import Alchemist, Material
 
+from models import Material, Recipe, Re_MatAssociation, BagMaterials, Alchemist
 from sqlalchemy.exc import IntegrityError
 
 # 2 - generate database schema
@@ -22,8 +22,10 @@ session = Session()
 
 app = Flask(__name__)
 
-###############################################################################
-#
+################################################################################
+                                   #Alchemist#
+
+
 @app.route('/alchemist/<int:alId>', methods=['GET'])
 def alchemist_get(alId):
 
@@ -48,8 +50,10 @@ def alchemist_post(alId):
             setattr(al,k,data[k])
     return ''   #need to return something, why???
 
-################################################################################
 
+
+################################################################################
+                                   #Material#
 @app.route('/material/<int:matId>', methods=['GET'])
 def material_get(matId):
 
@@ -72,7 +76,61 @@ def material_post(matId):
             setattr(al,k,data[k])
     return '' 
 
+
+
 ################################################################################
+                                   #Recipe#
+
+@app.route('/recipe/<int:repId>', methods=['GET'])
+def repice_get(repId):
+
+
+    rep=session.query(Recipe).filter(Recipe.id==repId).first()
+    ks=rep.__table__.columns.keys()
+    d={}
+    for k in ks:
+        d[k]=getattr(rep,k)
+    return json.dumps(d)
+
+
+@app.route('/recipe/<int:repId>', methods=['POST'])
+def recipe_post(repId):
+    rep=session.query(Recipe).filter(Recipe.id==repId).first()
+
+    data=request.get_json(force=True, silent=True)#data es un dict
+    for k in data.keys():
+        if k != "id" and hasattr(al,k):
+            setattr(al,k,data[k])
+    return ''
+
+
+
+################################################################################
+                                   #BagMaterials#
+'''
+@app.route('/bagmaterials/<int:alId>', methods=['GET'])
+def bagmaterials_get(alId):
+
+
+    bms=session.query(BagMaterials).filter((BagMaterials.alId==alId)).all()
+    ks=bm[0].__table__.columns.keys()
+    d={}
+    for k in ks:
+        d[k]=getattr(bm,k)
+    return json.dumps(d)
+
+
+@app.route('/bagmaterials/<int:bmId>', methods=['POST'])
+def bagmaterials_post(alId):
+    bms=session.query(BagMaterials).filter((BagMaterials.alId==alId)).all()
+
+    data=request.get_json(force=True, silent=True)#data es un dict
+    for k in data.keys():
+        if k != "id" and hasattr(al,k):
+            setattr(al,k,data[k])
+    return ''
+'''
+
 
 ################################################################################
 
