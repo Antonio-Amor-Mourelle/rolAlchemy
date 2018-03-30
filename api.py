@@ -107,19 +107,25 @@ def recipe_post(repId):
 
 ################################################################################
                                    #BagMaterials#
-'''
+
 @app.route('/bagmaterials/<int:alId>', methods=['GET'])
 def bagmaterials_get(alId):
 
 
     bms=session.query(BagMaterials).filter((BagMaterials.alId==alId)).all()
-    ks=bm[0].__table__.columns.keys()
-    d={}
-    for k in ks:
-        d[k]=getattr(bm,k)
-    return json.dumps(d)
+    ks=bms[0].__table__.columns.keys()
+    D={}
+    L=[]
+    for bm in bms:
+        d={}
+        for k in ks:
+            if k != 'alId': # No queremos que nos devuelva el id, ya lo sabemos, hemos buscado por esto
+                d[k]=getattr(bm,k)
+        L.append(d)
+    D['materiales']=L
+    return json.dumps(D)
 
-
+'''
 @app.route('/bagmaterials/<int:bmId>', methods=['POST'])
 def bagmaterials_post(alId):
     bms=session.query(BagMaterials).filter((BagMaterials.alId==alId)).all()
