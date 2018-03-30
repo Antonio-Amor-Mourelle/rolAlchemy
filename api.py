@@ -34,7 +34,8 @@ def alchemist_get(alId):
     ks=al.__table__.columns.keys()
     d={}
     for k in ks:
-        d[k]=getattr(al,k)
+        if k != 'alId': # No queremos que nos devuelva el id, ya lo sabemos, ha sido el parametro de busqueda
+            d[k]=getattr(al,k)
     return json.dumps(d)
 
 
@@ -45,8 +46,7 @@ def alchemist_post(alId):
     data=request.get_json(force=True, silent=True)#data es un dict
     #data=request.get_json(force=True)
     for k in data.keys():
-        if k != "id" and hasattr(al,k): # no deberia ser necesario el hasattr pero lo ponemos por si acaso
-            print('aqui')
+        if k != "id" and hasattr(al,k): 
             setattr(al,k,data[k])
     return ''   #need to return something, why???
 
@@ -62,7 +62,8 @@ def material_get(matId):
     ks=mat.__table__.columns.keys()
     d={}
     for k in ks:
-        d[k]=getattr(mat,k)
+        if k != 'alId': 
+            d[k]=getattr(mat,k)
     return json.dumps(d)
 
 
@@ -77,6 +78,15 @@ def material_post(matId):
     return '' 
 
 
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+def material_url(pointer):
+    pointer=str(pointer)
+    if pointer.isdigit():
+        return '/material/' + pointer
+    else:
+        rep=session.query(Material).filter(Material.name==pointer).first()
+        return '/material/' + str(rep.id)
 
 ################################################################################
                                    #Recipe#
@@ -89,7 +99,8 @@ def repice_get(repId):
     ks=rep.__table__.columns.keys()
     d={}
     for k in ks:
-        d[k]=getattr(rep,k)
+        if k != 'alId': 
+            d[k]=getattr(rep,k)
     return json.dumps(d)
 
 
@@ -97,29 +108,45 @@ def repice_get(repId):
 def recipe_post(repId):
     rep=session.query(Recipe).filter(Recipe.id==repId).first()
 
-    data=request.get_json(force=True, silent=True)#data es un dict
+    data=request.get_json(force=True, silent=True)
     for k in data.keys():
         if k != "id" and hasattr(al,k):
             setattr(al,k,data[k])
     return ''
 
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
+def recipe_url(pointer):
+    pointer=str(pointer)
+    if pointer.isdigit():
+        return '/recipe/' + pointer
+    else:
+        rep=session.query(Recipe).filter(Recipe.name==pointer).first()
+        return '/recipe/' + str(rep.id)
 
 ################################################################################
                                    #BagMaterials#
-'''
+
 @app.route('/bagmaterials/<int:alId>', methods=['GET'])
 def bagmaterials_get(alId):
 
 
+    '''Esta funcion no devuelve un dict generado de manera generica sino que lo genero
+    con el formato concreto que busco: Nombre material, Unidades, URL de la material'''
     bms=session.query(BagMaterials).filter((BagMaterials.alId==alId)).all()
-    ks=bm[0].__table__.columns.keys()
-    d={}
-    for k in ks:
-        d[k]=getattr(bm,k)
-    return json.dumps(d)
+    D={}
+    L=[]
+    for bm in bms:
+        d={}
+        #conseguimos el nombre del material
+        d['mat']=session.query(Material).filter((Material.id==bm.matId)).first().name
+        d['num']=bm.num
+        d['url']=material_url(bm.matId)
+        L.append(d)
+    D['materiales']=L
+    return json.dumps(D)
 
-
+'''
 @app.route('/bagmaterials/<int:bmId>', methods=['POST'])
 def bagmaterials_post(alId):
     bms=session.query(BagMaterials).filter((BagMaterials.alId==alId)).all()
